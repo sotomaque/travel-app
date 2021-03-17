@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { COLORS, dummyData, FONTS, icons, images, SIZES } from '../constants';
+import { TextButton } from '../components';
 
 const isIOS = Platform.OS === 'ios';
 
@@ -103,6 +104,19 @@ const Dashboard = ({ navigation }) => {
           ],
           { useNativeDriver: false }
         )}
+        onMomentumScrollEnd={(event) => {
+          // calculate position
+          let position = (
+            event.nativeEvent.contentOffset.x / COUNTRIES_ITEM_SIZE
+          ).toFixed(0);
+
+          // set place
+          setPlaces([
+            { id: -1 },
+            ...dummyData.countries[position].places,
+            { id: -2 },
+          ]);
+        }}
         renderItem={({ item, index }) => {
           const opacity = countryScrollX.interpolate({
             inputRange: [
@@ -257,6 +271,47 @@ const Dashboard = ({ navigation }) => {
                     borderRadius: 20,
                   }}
                 />
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    marginHorizontal: SIZES.padding,
+                  }}
+                >
+                  {/* ITEM NAME LABEL */}
+                  <Text
+                    style={{
+                      marginBottom: SIZES.radius,
+                      color: COLORS.white,
+                      ...FONTS.h1,
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+
+                  {/* ITEM DESCRIPTION LABEL */}
+                  <Text
+                    style={{
+                      marginBottom: SIZES.padding * 2,
+                      textAlign: 'center',
+                      color: COLORS.white,
+                      ...FONTS.body3,
+                    }}
+                  >
+                    {item.description}
+                  </Text>
+
+                  {/* Text Button */}
+                  <TextButton
+                    label="Explore"
+                    customContainerStyle={{
+                      position: 'absolute',
+                      bottom: -20,
+                      width: 150,
+                    }}
+                  />
+                </View>
               </Animated.View>
             );
           }
