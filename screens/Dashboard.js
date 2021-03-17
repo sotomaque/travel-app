@@ -1,21 +1,193 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity
+  Animated,
+  Image,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { COLORS, dummyData, FONTS, icons, images, SIZES } from '../constants';
+
+const COUNTRIES_ITEM_SIZE = SIZES.width / 3;
 
 const Dashboard = ({ navigation }) => {
+  const [countries, setCountries] = useState([
+    { id: -1 },
+    ...dummyData.countries,
+    { id: -2 },
+  ]);
+
+  const countryScrollX = useRef(new Animated.Value(0)).current;
+
+  const renderHeader = () => {
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text>Dashboard</Text>
-            <TouchableOpacity
-                onPress={() => navigation.navigate("Place")}
-            >
-                <Text>Navigate to Place</Text>
-            </TouchableOpacity>
+      <View
+        style={{
+          flexDirection: 'row',
+          paddingHorizontal: SIZES.padding,
+          paddingVertical: SIZES.base,
+          alignItems: 'center',
+        }}
+      >
+        {/* (LEFT) Side Drawer Button */}
+        <TouchableOpacity
+          style={{
+            width: 45,
+            height: 45,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onPress={() => {}}
+        >
+          <Image
+            source={icons.side_drawer}
+            resizeMode="contain"
+            style={{ width: 25, height: 25, tintColor: COLORS.white }}
+          />
+        </TouchableOpacity>
+
+        {/* (CENTER) Page Title  */}
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Text style={{ color: COLORS.white, ...FONTS.h3 }}>Home</Text>
         </View>
-    )
-}
+
+        {/* (RIGHT): Profile */}
+        <TouchableOpacity onPress={() => {}}>
+          <Image
+            source={images.profile_pic}
+            style={{ height: 45, width: 45, borderRadius: 30 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderCountries = () => {
+    return (
+      <Animated.FlatList
+        data={countries}
+        decelerationRate={0}
+        horizontal
+        keyExtractor={(item) => `${item.id}`}
+        pagingEnabled
+        scrollEventThrottle={16}
+        showsHorizontalScrollIndicator={false}
+        snapToAlignment="center"
+        snapToInterval={COUNTRIES_ITEM_SIZE}
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: {
+                contentOffset: {
+                  x: countryScrollX,
+                },
+              },
+            },
+          ],
+          { useNativeDriver: false }
+        )}
+        renderItem={({ item, index }) => {
+          const opacity = countryScrollX.interpolate({
+            inputRange: [
+              (index - 2) * COUNTRIES_ITEM_SIZE,
+              (index - 1) * COUNTRIES_ITEM_SIZE,
+              index * COUNTRIES_ITEM_SIZE,
+            ],
+            outputRange: [0.3, 1, 0.3],
+            extrapolate: 'clamp',
+          });
+          const mapSize = countryScrollX.interpolate({
+            inputRange: [
+              (index - 2) * COUNTRIES_ITEM_SIZE,
+              (index - 1) * COUNTRIES_ITEM_SIZE,
+              index * COUNTRIES_ITEM_SIZE,
+            ],
+            outputRange: [25, Platform.OS === 'ios' ? 80 : 60, 25],
+            extrapolate: 'clamp',
+          });
+
+          const fontSize = countryScrollX.interpolate({
+            inputRange: [
+              (index - 2) * COUNTRIES_ITEM_SIZE,
+              (index - 1) * COUNTRIES_ITEM_SIZE,
+              index * COUNTRIES_ITEM_SIZE,
+            ],
+            outputRange: [15, 25, 15],
+            extrapolate: 'clamp',
+          });
+
+          if (index === 0 || index === countries.length - 1) {
+            return (
+              <View
+                style={{
+                  width: COUNTRIES_ITEM_SIZE,
+                }}
+              />
+            );
+          } else {
+            return (
+              <Animated.View
+                opacity={opacity}
+                style={{
+                  width: COUNTRIES_ITEM_SIZE,
+                  height: 130,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Animated.Image
+                  source={item.image}
+                  resizeMode="contain"
+                  style={{
+                    width: mapSize,
+                    height: mapSize,
+                    tintColor: COLORS.white,
+                  }}
+                />
+                <Animated.Text
+                  style={{
+                    marginTop: 3,
+                    color: COLORS.white,
+                    ...FONTS.h1,
+                    fontSize: fontSize,
+                  }}
+                >
+                  {item.name}
+                </Animated.Text>
+              </Animated.View>
+            );
+          }
+        }}
+      />
+    );
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.black }}>
+      {/* (TOP): HEADER */}
+      {renderHeader()}
+
+      {/* (MAIN): BODY */}
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: Platform.OS === 'ios' ? 40 : 0,
+        }}
+      >
+        <View style={{ height: 700 }}>
+          {/* Countries */}
+          <View>{renderCountries()}</View>
+
+          {/* Places */}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 export default Dashboard;

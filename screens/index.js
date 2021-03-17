@@ -1,7 +1,4 @@
-import Dashboard from "./Dashboard"
-import Place from "./Place"
+import Dashboard from './Dashboard';
+import Place from './Place';
 
-export {
-    Dashboard,
-    Place
-};
+export { Dashboard, Place };

@@ -37,15 +37,25 @@ Node
 NPM
 ```
 
+```
+Android Studio / Xcode
+```
+
 ### Installing
 
 A step by step series of examples that tell you how to get a development env running.
 
 1. Clone
-2. run:
+2. run metro server:
 
 ```
 npm run postInstall
+```
+
+3. run in emulator:
+
+```
+npm run ios / android
 ```
 
 And enjoy
