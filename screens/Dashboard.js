@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 import { COLORS, dummyData, FONTS, icons, images, SIZES } from '../constants';
 
+const isIOS = Platform.OS === 'ios';
+
 const COUNTRIES_ITEM_SIZE = SIZES.width / 3;
+const PLACES_ITEM_SIZE = isIOS ? SIZES.width / 1.25 : SIZES.width / 1.2;
+const EMPTY_ITEM_SIZE = (SIZES.width - PLACES_ITEM_SIZE) / 2;
 
 const Dashboard = ({ navigation }) => {
   const [countries, setCountries] = useState([
@@ -20,7 +24,14 @@ const Dashboard = ({ navigation }) => {
     { id: -2 },
   ]);
 
+  const [places, setPlaces] = useState([
+    { id: -1 },
+    ...dummyData.countries[0].places,
+    { id: -2 },
+  ]);
+
   const countryScrollX = useRef(new Animated.Value(0)).current;
+  const placesScrollX = useRef(new Animated.Value(0)).current;
 
   const renderHeader = () => {
     return (
@@ -168,6 +179,92 @@ const Dashboard = ({ navigation }) => {
     );
   };
 
+  const renderPlaces = () => {
+    return (
+      <Animated.FlatList
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        data={places}
+        keyExtractor={(item) => `${item.id}`}
+        contentContainerStyle={{ alignItems: 'center' }}
+        snapToAlignment="center"
+        snapToInterval={isIOS ? PLACES_ITEM_SIZE + 28 : PLACES_ITEM_SIZE}
+        scrollEventThrottle={16}
+        decelerationRate={0}
+        bounces={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: placesScrollX } } }],
+          { useNativeDriver: false }
+        )}
+        renderItem={({ item, index }) => {
+          const opacity = placesScrollX.interpolate({
+            inputRange: [
+              (index - 2) * PLACES_ITEM_SIZE,
+              (index - 1) * PLACES_ITEM_SIZE,
+              index * PLACES_ITEM_SIZE,
+            ],
+            outputRange: [0.3, 1, 0.3],
+            extrapolate: 'clamp',
+          });
+
+          let activeHeight = 0;
+
+          if (isIOS) {
+            if (SIZES.height > 800) {
+              activeHeight = SIZES.height / 2;
+            } else {
+              activeHeight = SIZES.height / 1.65;
+            }
+          } else {
+            activeHeight = SIZES.height / 1.6;
+          }
+
+          const height = placesScrollX.interpolate({
+            inputRange: [
+              (index - 2) * PLACES_ITEM_SIZE,
+              (index - 1) * PLACES_ITEM_SIZE,
+              index * PLACES_ITEM_SIZE,
+            ],
+            outputRange: [
+              SIZES.height / 2.25,
+              activeHeight,
+              SIZES.height / 2.25,
+            ],
+            extrapolate: 'clamp',
+          });
+
+          if (index === 0 || index === places.length - 1) {
+            return <View style={{ width: EMPTY_ITEM_SIZE }} />;
+          } else {
+            return (
+              <Animated.View
+                opacity={opacity}
+                style={{
+                  width: PLACES_ITEM_SIZE,
+                  height: height,
+                  alignItems: 'center',
+                  borderRadius: 20,
+                  padding: 10,
+                }}
+              >
+                <Image
+                  source={item.image}
+                  resizeMode="cover"
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    borderRadius: 20,
+                  }}
+                />
+              </Animated.View>
+            );
+          }
+        }}
+      ></Animated.FlatList>
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.black }}>
       {/* (TOP): HEADER */}
@@ -176,7 +273,7 @@ const Dashboard = ({ navigation }) => {
       {/* (MAIN): BODY */}
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: Platform.OS === 'ios' ? 40 : 0,
+          paddingBottom: isIOS ? 40 : 0,
         }}
       >
         <View style={{ height: 700 }}>
@@ -184,6 +281,7 @@ const Dashboard = ({ navigation }) => {
           <View>{renderCountries()}</View>
 
           {/* Places */}
+          <View style={{ height: isIOS ? 500 : 450 }}>{renderPlaces()}</View>
         </View>
       </ScrollView>
     </SafeAreaView>
