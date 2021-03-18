@@ -31,6 +31,8 @@ const Dashboard = ({ navigation }) => {
     { id: -2 },
   ]);
 
+  const [placesScrollPosition, setPlacesScrollPosition] = useState(0);
+
   const countryScrollX = useRef(new Animated.Value(0)).current;
   const placesScrollX = useRef(new Animated.Value(0)).current;
 
@@ -193,6 +195,13 @@ const Dashboard = ({ navigation }) => {
     );
   };
 
+  const exporeButtonHanlder = () => {
+    // get places current index
+    const currentIndex = parseInt(placesScrollPosition, 10) + 1;
+    // navigate to next screen
+    navigation.navigate('Place', { selectedPlace: places[currentIndex] });
+  };
+
   const renderPlaces = () => {
     return (
       <Animated.FlatList
@@ -211,6 +220,14 @@ const Dashboard = ({ navigation }) => {
           [{ nativeEvent: { contentOffset: { x: placesScrollX } } }],
           { useNativeDriver: false }
         )}
+        onMomentumScrollEnd={(event) => {
+          // calculate position
+          const position = (
+            event.nativeEvent.contentOffset.x / PLACES_ITEM_SIZE
+          ).toFixed(0);
+          // set place scroll position
+          setPlacesScrollPosition(position);
+        }}
         renderItem={({ item, index }) => {
           const opacity = placesScrollX.interpolate({
             inputRange: [
@@ -302,7 +319,7 @@ const Dashboard = ({ navigation }) => {
                     {item.description}
                   </Text>
 
-                  {/* Text Button */}
+                  {/* Explore Text Button */}
                   <TextButton
                     label="Explore"
                     customContainerStyle={{
@@ -310,6 +327,7 @@ const Dashboard = ({ navigation }) => {
                       bottom: -20,
                       width: 150,
                     }}
+                    onPress={() => exporeButtonHanlder()}
                   />
                 </View>
               </Animated.View>

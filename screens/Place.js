@@ -1,10 +1,36 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ImageBackground, Image } from 'react-native';
 
-const Place = () => {
+import { HeaderBar } from '../components';
+import { COLORS, SIZES, FONTS, icons } from '../constants';
+
+const Place = ({ navigation, route }) => {
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  useEffect(() => {
+    const { selectedPlace } = route.params;
+    setSelectedPlace(selectedPlace);
+  });
+
+  const renderPlace = () => {
+    return (
+      <ImageBackground
+        source={selectedPlace?.image}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <HeaderBar
+          title=""
+          leftOnPress={() => navigation.goBack()}
+          right={false}
+          containerStyle={{
+            marginTop: SIZES.padding * 2,
+          }}
+        />
+      </ImageBackground>
+    );
+  };
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Place</Text>
+      {renderPlace()}
     </View>
   );
 };
